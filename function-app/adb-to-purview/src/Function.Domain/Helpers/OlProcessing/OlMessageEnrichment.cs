@@ -33,32 +33,32 @@ namespace Function.Domain.Helpers.Parser
         public async Task<EnrichedEvent?> GetEnrichedEvent(Event olEvent)
         {
             // If the run id is present then this is a job triggered run rather then interactive notebook run
-            if (olEvent.Run.Facets.EnvironmentProperties != null &&
-                olEvent.Run.Facets.EnvironmentProperties.EnvironmentProperties.SparkDatabricksJobRunId != "")
-            {
-                var jobRunId = olEvent.Run.Facets.EnvironmentProperties.EnvironmentProperties.SparkDatabricksJobRunId;
-                var adbWorkspaceUrl = olEvent.Job.Namespace.Split('#')[0];
-                var adbRoot = await _adbClientProvider.GetSingleAdbJobAsync(long.Parse(jobRunId), adbWorkspaceUrl);
+            // if (olEvent.Run.Facets.EnvironmentProperties != null &&
+            //     olEvent.Run.Facets.EnvironmentProperties.EnvironmentProperties.SparkDatabricksJobRunId != "")
+            // {
+            //     var jobRunId = olEvent.Run.Facets.EnvironmentProperties.EnvironmentProperties.SparkDatabricksJobRunId;
+            //     var adbWorkspaceUrl = olEvent.Job.Namespace.Split('#')[0];
+            //     var adbRoot = await _adbClientProvider.GetSingleAdbJobAsync(long.Parse(jobRunId), adbWorkspaceUrl);
 
-                if (adbRoot == null)
-                {
-                    return null;
-                }
+            //     if (adbRoot == null)
+            //     {
+            //         return null;
+            //     }
 
-                AdbRoot? adbParentRoot = null;
-                // See if run task was part of a multi-task job
-                if (adbRoot.ParentRunId != 0)
-                {
-                    adbParentRoot = await _adbClientProvider.GetSingleAdbJobAsync(adbRoot.ParentRunId, adbWorkspaceUrl);
-                    if (adbParentRoot == null)
-                    {
-                        _logger.LogWarning($"A parent job exists but cannot be retrieved from Databricks.  Parent job id: {adbRoot.ParentRunId}");
-                    }
-                }
-                var rtrnJob = new EnrichedEvent(olEvent, adbRoot, adbParentRoot);
-                rtrnJob.IsInteractiveNotebook = false;
-                return rtrnJob;
-            }
+            //     AdbRoot? adbParentRoot = null;
+            //     // See if run task was part of a multi-task job
+            //     if (adbRoot.ParentRunId != 0)
+            //     {
+            //         adbParentRoot = await _adbClientProvider.GetSingleAdbJobAsync(adbRoot.ParentRunId, adbWorkspaceUrl);
+            //         if (adbParentRoot == null)
+            //         {
+            //             _logger.LogWarning($"A parent job exists but cannot be retrieved from Databricks.  Parent job id: {adbRoot.ParentRunId}");
+            //         }
+            //     }
+            //     var rtrnJob = new EnrichedEvent(olEvent, adbRoot, adbParentRoot);
+            //     rtrnJob.IsInteractiveNotebook = false;
+            //     return rtrnJob;
+            // }
             var rtrnNb = new EnrichedEvent(olEvent, null, null);
             rtrnNb.IsInteractiveNotebook = true;
             return rtrnNb;

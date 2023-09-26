@@ -9,6 +9,6 @@ namespace Function.Domain.Services
 {
     public interface IOlToPurviewParsingService
     {
-        public string? GetPurviewFromOlEvent(EnrichedEvent eventData, IDatabricksToPurviewParser parser);
+        public string? GetPurviewFromOlEvent(EnrichedEvent eventData, SparkToPurviewParser parser);
     }
 }

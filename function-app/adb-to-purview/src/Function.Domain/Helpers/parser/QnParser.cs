@@ -48,33 +48,35 @@ namespace Function.Domain.Helpers
         public PurviewIdentifier GetIdentifiers(string nameSpace, string name)
         {
             var purviewIdentifier = new PurviewIdentifier();
+            purviewIdentifier.PurviewType = "hdfs_path";
+            purviewIdentifier.QualifiedName = name;
 
-            // If this is an ADB mountpoint, resolve and continue
-            if ((nameSpace == ParserConstants.DBFS || nameSpace == ParserConstants.DBFS2) && name.Substring(0, 4) == "/mnt")
-            {
-                (string nmSpace, string nm) = GetMountPoint(name);
-                nameSpace = nmSpace;
-                name = nm;
-            }
-            // Break the name and nameSpace values into their individual / referencable parts
-            var olParts = new OlParts(nameSpace, name);
+            // // If this is an ADB mountpoint, resolve and continue
+            // if ((nameSpace == ParserConstants.DBFS || nameSpace == ParserConstants.DBFS2) && name.Substring(0, 4) == "/mnt")
+            // {
+            //     (string nmSpace, string nm) = GetMountPoint(name);
+            //     nameSpace = nmSpace;
+            //     name = nm;
+            // }
+            // // Break the name and nameSpace values into their individual / referencable parts
+            // var olParts = new OlParts(nameSpace, name);
 
-            // Get a dictionary assigning the configuration string keys to each of the olParts
-            var olDynParts = olParts.GetDynamicPairs(JSON_KEY_NAMES);
+            // // Get a dictionary assigning the configuration string keys to each of the olParts
+            // var olDynParts = olParts.GetDynamicPairs(JSON_KEY_NAMES);
 
-            // Retrieve the relevant mapping of for the particular nameSpace and name from the configuration, by 
-            // matching based on the conditions specified in the configuration.
-            var mapping = GetMapping(olDynParts);
+            // // Retrieve the relevant mapping of for the particular nameSpace and name from the configuration, by 
+            // // matching based on the conditions specified in the configuration.
+            // var mapping = GetMapping(olDynParts);
 
-            if (mapping is null)
-            {
-                var ex = new MissingCriticalDataException("Missing Ol to Purview mapping data for this source");
-                _logger.LogError(ex, "Missing Ol to Purview mapping data");
-                throw ex;
-            }
+            // if (mapping is null)
+            // {
+            //     var ex = new MissingCriticalDataException("Missing Ol to Purview mapping data for this source");
+            //     _logger.LogError(ex, "Missing Ol to Purview mapping data");
+            //     throw ex;
+            // }
 
-            // Use the relevant configuration mapping and the olParts to construct the PurviewIdentifier
-            purviewIdentifier = GetPurviewIdentifier(mapping, olDynParts);
+            // // Use the relevant configuration mapping and the olParts to construct the PurviewIdentifier
+            // purviewIdentifier = GetPurviewIdentifier(mapping, olDynParts);
 
             return purviewIdentifier;
         }

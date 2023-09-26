@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Function.Domain.Helpers;
 using Microsoft.Extensions.Configuration;
+using Function.Domain.Models.OL;
 
 namespace AdbToPurview.Function
 {
@@ -47,7 +48,8 @@ namespace AdbToPurview.Function
                     return "";
                 }
 
-                IDatabricksToPurviewParser parser = new DatabricksToPurviewParser(_loggerFactory, _configuration, enrichedEvent);
+                // IDatabricksToPurviewParser parser = new DatabricksToPurviewParser(_loggerFactory, _configuration, enrichedEvent);
+                SparkToPurviewParser parser = new SparkToPurviewParser(_loggerFactory, _configuration, enrichedEvent);
                 var purviewEvent = _olToPurviewParsingService.GetPurviewFromOlEvent(enrichedEvent, parser);
                 if (purviewEvent == null)
                 {
@@ -68,5 +70,5 @@ namespace AdbToPurview.Function
                 return message;
             }
         }
-    }
+  }
 }

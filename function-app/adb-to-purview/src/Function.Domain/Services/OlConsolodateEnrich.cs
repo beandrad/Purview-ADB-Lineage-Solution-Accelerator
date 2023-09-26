@@ -81,32 +81,36 @@ namespace Function.Domain.Services
                 // Store the start event 
                 if (_event.EventType == START_EVENT_TYPE)
                 {
-                    if (_event.Run.Facets.EnvironmentProperties != null)
-                    {
-                        if (!await olMessageConsolodation.CaptureEnvironmentFromStart(_event, _event.Run.RunId, _event.Run.Facets.EnvironmentProperties!))
-                        {
-                            _logger.LogError("Problem capturing environment from start event");
-                            return null;
-                        }
-                    }
+                  _logger.LogInformation("Ignoring start event");
+                    // if (_event.Run.Facets.EnvironmentProperties != null)
+                    // {
+                    //     if (!await olMessageConsolodation.CaptureEnvironmentFromStart(_event, _event.Run.RunId, _event.Run.Facets.EnvironmentProperties!))
+                    //     {
+                    //         _logger.LogError("Problem capturing environment from start event");
+                    //         return null;
+                    //     }
+                    // }
                 }
                 // consolidate and enrich the complete event if possible
                 else if (_event.EventType == COMPLETE_EVENT_TYPE)
                 {
-                    var consolodatedEvent = await olMessageConsolodation.ConsolodateCompleteEvent(_event, _event.Run.RunId);
-                    if (consolodatedEvent == null)
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        var enrichedEvent = await olEnrichMessage.GetEnrichedEvent(consolodatedEvent);
-                        if (enrichedEvent == null)
-                        {
-                            return null;
-                        }
-                        return enrichedEvent;
-                    }
+                  var enrichedEvent = await olEnrichMessage.GetEnrichedEvent(_event);
+                  _logger.LogInformation("Enriched event: " + enrichedEvent);
+                  return enrichedEvent;
+                    // var consolodatedEvent = await olMessageConsolodation.ConsolodateCompleteEvent(_event, _event.Run.RunId);
+                    // if (consolodatedEvent == null)
+                    // {
+                    //     return null;
+                    // }
+                    // else
+                    // {
+                    //     var enrichedEvent = await olEnrichMessage.GetEnrichedEvent(consolodatedEvent);
+                    //     if (enrichedEvent == null)
+                    //     {
+                    //         return null;
+                    //     }
+                    //     return enrichedEvent;
+                    // }
                 }
                 else
                 {

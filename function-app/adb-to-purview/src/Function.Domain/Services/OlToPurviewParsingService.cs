@@ -42,26 +42,40 @@ namespace Function.Domain.Services
         /// </summary>
         /// <param name="eventData">Contains OpenLineage and, optionally data obtained from the ADB Jobs API</param>
         /// <returns>Serialized Atlas entities</returns>
-        public string? GetPurviewFromOlEvent(EnrichedEvent eventData, IDatabricksToPurviewParser parser)
+        public string? GetPurviewFromOlEvent(EnrichedEvent eventData, SparkToPurviewParser parser)
         {
-            if (!verifyEventData(eventData))
-            {
-                _logger.LogWarning($"OlToPurviewParsingService-GetPurviewFromOlEventAsync: Event data is not valid - eventData: {JsonConvert.SerializeObject(eventData)}");
-                return null;
-            }
+            // if (!verifyEventData(eventData))
+            // {
+            //     _logger.LogWarning($"OlToPurviewParsingService-GetPurviewFromOlEventAsync: Event data is not valid - eventData: {JsonConvert.SerializeObject(eventData)}");
+            //     return null;
+            // }
 
-            if (eventData.IsInteractiveNotebook)
-            {
-                return ParseInteractiveNotebook(parser);
-            }
-            else if (parser.GetJobType() == JobType.JobNotebook)
-            {
-                return ParseJobNotebook(parser);
-            }
-            else
-            {
-                return ParseJobTask(parser);
-            }
+            return ParseSynapseInteractiveNotebook(parser);
+
+            // if (eventData.IsInteractiveNotebook)
+            // {
+            //     return ParseSynapseInteractiveNotebook(parser);
+            //     // return ParseInteractiveNotebook(parser);
+            // }
+            // else if (parser.GetJobType() == JobType.JobNotebook)
+            // {
+            //     return ParseJobNotebook(parser);
+            // }
+            // else
+            // {
+            //     return ParseJobTask(parser);
+            // }
+        }
+
+        private string ParseSynapseInteractiveNotebook(SparkToPurviewParser parser)
+        {
+            var sparkApplication = parser.GetSparkApplication();
+            var sparkProcess = parser.GetSparkProcess(sparkApplication.Attributes.QualifiedName);
+            
+            var sparkApplicationStr = JsonConvert.SerializeObject(sparkApplication);
+            var sparkProcessStr = JsonConvert.SerializeObject(sparkProcess);
+            
+            return $"{PREFIX}{sparkApplicationStr},{sparkProcessStr}{SUFFIX}";
         }
 
         private string ParseInteractiveNotebook(IDatabricksToPurviewParser parser)

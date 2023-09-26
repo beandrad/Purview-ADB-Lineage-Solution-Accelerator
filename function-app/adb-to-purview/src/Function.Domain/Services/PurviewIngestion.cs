@@ -84,8 +84,8 @@ namespace Function.Domain.Services
 
             // This hash and cache helps to prevent processing the same event multiple times
             string ? dataEvent = CalculateHash(entitiesFromInitialJson.ToString());
-            if (!_cacheOfSeenEvents.Contains(dataEvent))
-            {
+            // if (!_cacheOfSeenEvents.Contains(dataEvent))
+            // {
                 var cacheItem = new CacheItem(dataEvent, dataEvent);  
                 _cacheOfSeenEvents.Add(cacheItem, cacheItemPolicy);
 
@@ -93,12 +93,14 @@ namespace Function.Domain.Services
                 {
                     if (IsProcessEntity(purviewEntityToBeUpdated))
                     {
+                      
                         JObject new_entity = await Validate_Process_Entities(purviewEntityToBeUpdated);
                         // Update Column mapping attribute based on the dictionary and inject the column parser with the openlineage event
                         // This lets us use the discovered inputs / outputs rather than just what open lineage provides.
                         string columnMapping = JsonConvert.SerializeObject(colParser.GetColIdentifiers(originalFqnToDiscoveredFqn));
                         new_entity["attributes"]!["columnMapping"] = columnMapping;
                         to_purview_Json.Add(new_entity);
+                        _logger.LogInformation("Process entity added to purview json");
                     }
                     else
                     {
@@ -156,6 +158,7 @@ namespace Function.Domain.Services
                 HttpResponseMessage results;
                 string? payload = "";
 
+                _logger.LogInformation("if (inputs_outputs.Count > 0)");
                 if (inputs_outputs.Count > 0)
                 {
                     JArray tempEntities = new JArray();
@@ -188,6 +191,7 @@ namespace Function.Domain.Services
                         _logger.LogError($"Error Loading to Purview!");
                     }
                 }
+                _logger.LogInformation("if (to_purview_Json.Count > 0)");
                 if (to_purview_Json.Count > 0)
                 {
                     _logger.LogDebug(to_purview_Json.ToString());
@@ -200,6 +204,8 @@ namespace Function.Domain.Services
                         if (results.ReasonPhrase != "OK")
                         {
                             _logger.LogError($"Error Loading to Purview JSON Entiitesto Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
+                        } else {
+                          _logger.LogInformation($"Purview Loaded JSON Entities: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
                         }
                     }
                     else
@@ -229,9 +235,9 @@ namespace Function.Domain.Services
                     }
                     return false;
                 }
-            }
-            _logger.LogInformation($"Payload already registered in Microsoft Purview: {json.ToString()}");
-            return false;
+            // }
+            // _logger.LogInformation($"Payload already registered in Microsoft Purview: {json.ToString()}");
+            // return false;
         }
         private bool EntityAttributesHaveBeenPopulated(JObject questionableEntity)
         {
@@ -270,6 +276,7 @@ namespace Function.Domain.Services
 
 
             QueryValeuModel sourceJson = await sourceEntity.QueryInPurview();
+            _logger.LogInformation($"Validate process: {Process}");
             // Capture the updated qualified name mapping in case column mapping needs it
             originalFqnToDiscoveredFqn[qualifiedName] = sourceEntity.currentQualifiedName();
 
@@ -309,7 +316,7 @@ namespace Function.Domain.Services
         /// <returns>A PurviewCustomType</returns>
         private async Task<PurviewCustomType> SetOutputInput(JObject outPutInput, string inorout)
         {
-
+            _logger.LogInformation("SetOutputInput");
             string qualifiedName = outPutInput["uniqueAttributes"]!["qualifiedName"]!.ToString();
             string newqualifiedName = qualifiedName;
             string[] tmpName = qualifiedName.Split('/');
@@ -365,8 +372,10 @@ namespace Function.Domain.Services
                                 , _logger
                                 , _purviewClient);
             QueryValeuModel processModel = await processEntity.QueryInPurview();
+            _logger.LogInformation($"Process entity validated {Process}");
             Process["guid"] = processEntity.Properties["guid"];
             Process["attributes"]!["qualifiedName"] = processEntity.Properties["attributes"]!["qualifiedName"]!.ToString();
+            _logger.LogInformation($"Validating inputs and outputs");
             //Validate inputs
             foreach (JObject inputs in Process["attributes"]!["inputs"]!)
             {
@@ -378,6 +387,8 @@ namespace Function.Domain.Services
                 PurviewCustomType returnOutput = await SetOutputInput(outputs!, "outputs");
             }
 
+            _logger.LogInformation("Inputs and Outputs validated");
+
             //Validate Relationships
             if (Process.ContainsKey("relationshipAttributes"))
             {
@@ -386,7 +397,7 @@ namespace Function.Domain.Services
                     qualifiedName = Process["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString();
                     string[] tmpName = qualifiedName.Split('/');
                     Name = tmpName[tmpName.Length - 1];
-                    typename = "purview_custom_connector_generic_entity_with_columns";
+                    typename = "azure_datalake_gen2_resource_set";
                     if (!entitiesMarkedForDeletion.ContainsKey(qualifiedName))
                     {
 
@@ -414,6 +425,7 @@ namespace Function.Domain.Services
                     }
                 }
             }
+            _logger.LogInformation("Return process entity");
             return Process;
         }
         private bool IsProcessEntity(JObject Process)
@@ -431,11 +443,18 @@ namespace Function.Domain.Services
                 return false;
             }
 
-            if (!((JObject)Process["attributes"]!).ContainsKey("columnMapping"))
+            if (!((JObject)Process["attributes"]!).ContainsKey("inputs"))
             {
-                _logger.LogInformation($"Not found Attribute columnMapping on {Process.ToString()} is not a Process Entity!");
+                _logger.LogInformation($"Not found Attribute inputs on {Process.ToString()} is not a Process Entity!");
                 return false;
             }
+
+
+            // if (!((JObject)Process["attributes"]!).ContainsKey("columnMapping"))
+            // {
+            //     _logger.LogInformation($"Not found Attribute columnMapping on {Process.ToString()} is not a Process Entity!");
+            //     return false;
+            // }
 
             return true;
         }

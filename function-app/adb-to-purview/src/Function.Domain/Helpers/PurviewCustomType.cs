@@ -23,7 +23,8 @@ namespace Function.Domain.Helpers
     public class PurviewCustomType
     {
         private readonly ILogger _logger;
-        private readonly string EntityType = "purview_custom_connector_generic_entity_with_columns";
+        // private readonly string EntityType = "purview_custom_connector_generic_entity_with_columns";
+        private readonly string EntityType = "azure_datalake_gen2_resource_set";
         private PurviewClient _client;
         private JObject? properties;
         private AppConfigurationSettings? config = new AppConfigurationSettings();
@@ -156,6 +157,7 @@ namespace Function.Domain.Helpers
             ((JObject)properties["attributes"]!).Add("qualifiedName", qualified_name);
             ((JObject)properties["attributes"]!).Add("data_type", data_type);
             ((JObject)properties["attributes"]!).Add("description", description);
+            ((JObject)properties["attributes"]!).Add("isBlob", true);
         }
 
         /// <summary>
@@ -207,7 +209,7 @@ namespace Function.Domain.Helpers
                     ((JObject)filter!["filter"]!).Add("and", new JArray());
                 }
                 //Support for the cases when user use wasbs protocol for a ADLS GEN 2
-                if ((name.Contains(".dfs.core.windows.net")) || (name.Contains(".blob.core.windows.net")))
+                if ((name.Contains(".dfs.core.windows.net")) || (name.Contains(".blob.core.windows.net")) || (name.Contains(".dfs.fabric.microsoft.com")))
                 {
                     string orName = name.Contains(".dfs.core.windows.net") ? name.Replace(".dfs.core.windows.net", ".blob.core.windows.net") : name.Replace(".blob.core.windows.net", ".dfs.core.windows.net");
                     var orcondition = new JObject();
@@ -237,7 +239,7 @@ namespace Function.Domain.Helpers
                         ((JArray)((JObject)filter!["filter"]!)["and"]!).Add(condition);
                     };
                 }
-                else
+                else if (name != "")
                 {
                     var condition = new JObject();
                     condition.Add("attributeName", "qualifiedName");
@@ -276,7 +278,7 @@ namespace Function.Domain.Helpers
 
             String _fqn = properties!["attributes"]!["qualifiedName"]!.ToString();
             List<QueryValeuModel> results = await this._client.Query_entities(filter["filter"]!);
-            _logger.LogDebug($"Existing Asset Match Search for {_fqn}: Found {results.Count} candidate matches");
+            _logger.LogInformation($"Existing Asset Match Search for {_fqn}: Found {results.Count} candidate matches");
             if (results.Count > 0)
             {
                 _logger.LogDebug($"Existing Asset Match Search for {_fqn}: The first match has a fqn of {results[0].qualifiedName} and type of {results[0].entityType}");

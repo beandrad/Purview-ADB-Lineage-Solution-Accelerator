@@ -218,7 +218,7 @@ namespace Function.Domain.Helpers
                     }
                     numberEntities = numberEntities + 1000;
                     offset = numberEntities;
-                    if (entityObjectModel.entities.Count > 0)
+                    if (entityObjectModel.entities != null && entityObjectModel.entities.Count > 0)
                         entities.AddRange(entityObjectModel.entities);
                 }
             }
@@ -293,46 +293,47 @@ namespace Function.Domain.Helpers
                     }
                     numberEntities = numberEntities + 1000;
                     offset = numberEntities;
-                    if (entitiesFromPurview.entities != null)
-                    {
-                        foreach (var entity in entitiesFromPurview.entities)
-                        {
-                            if ((entity.entityType == "azure_datalake_gen2_resource_set") || (entity.entityType == "azure_blob_resource_set"))
-                            {
-                                //logger.LogInformation($"Looking for: {qualifiedName.ToLower().Trim('/')} on {entity.qualifiedName.ToString().ToLower()} IndexOf");
-                                if (entity.qualifiedName.ToString().ToLower().IndexOf(qualifiedName.ToLower().Trim('/')) > -1)
-                                {
-                                    entityObjectModel.entities.Add(entity);
-                                    numofretries = 1;
-                                    return entityObjectModel;
-                                }
-                                //logger.LogInformation($"Looking for: {qualifiedName.ToLower().Replace("blob", "dfs").Trim('/')} on {entity.qualifiedName.ToString().ToLower()} IndexOf");
-                                if (entity.qualifiedName.ToString().ToLower().IndexOf(qualifiedName.ToLower().Replace("blob", "dfs").Trim('/')) > -1)
-                                {
-                                    entityObjectModel.entities.Add(entity);
-                                    numofretries = 1;
-                                    return entityObjectModel;
-                                }
-                            }
-                            else
-                            {
-                                //logger.LogInformation($"Looking for: {qualifiedName.ToLower().Trim('/')} on {entity.qualifiedName.ToString().ToLower().Trim('/')} Iqual");
-                                if (entity.qualifiedName.ToString().ToLower().Trim('/') == qualifiedName.ToLower().Trim('/'))
-                                {
-                                    entityObjectModel.entities.Add(entity);
-                                    numofretries = 1;
-                                    return entityObjectModel;
-                                }
-                                //logger.LogInformation($"Looking for: {qualifiedName.ToLower().Replace("blob", "dfs").Trim('/')} on {entity.qualifiedName.ToString().ToLower().Trim('/')} Iqual");
-                                if (entity.qualifiedName.ToString().ToLower().Trim('/') == qualifiedName.ToLower().Replace("blob", "dfs").Trim('/'))
-                                {
-                                    entityObjectModel.entities.Add(entity);
-                                    numofretries = 1;
-                                    return entityObjectModel;
-                                }
-                            }
-                        }
-                    }
+                    logger.LogInformation($"Purview Loaded Processes: entitiesFromPurview {entitiesFromPurview}");
+                //     if (entitiesFromPurview.entities != null)
+                //     {
+                //         foreach (var entity in entitiesFromPurview.entities)
+                //         {
+                //             if ((entity.entityType == "azure_datalake_gen2_resource_set") || (entity.entityType == "azure_blob_resource_set"))
+                //             {
+                //                 //logger.LogInformation($"Looking for: {qualifiedName.ToLower().Trim('/')} on {entity.qualifiedName.ToString().ToLower()} IndexOf");
+                //                 if (entity.qualifiedName.ToString().ToLower().IndexOf(qualifiedName.ToLower().Trim('/')) > -1)
+                //                 {
+                //                     entityObjectModel.entities.Add(entity);
+                //                     numofretries = 1;
+                //                     return entityObjectModel;
+                //                 }
+                //                 //logger.LogInformation($"Looking for: {qualifiedName.ToLower().Replace("blob", "dfs").Trim('/')} on {entity.qualifiedName.ToString().ToLower()} IndexOf");
+                //                 if (entity.qualifiedName.ToString().ToLower().IndexOf(qualifiedName.ToLower().Replace("blob", "dfs").Trim('/')) > -1)
+                //                 {
+                //                     entityObjectModel.entities.Add(entity);
+                //                     numofretries = 1;
+                //                     return entityObjectModel;
+                //                 }
+                //             }
+                //             else
+                //             {
+                //                 //logger.LogInformation($"Looking for: {qualifiedName.ToLower().Trim('/')} on {entity.qualifiedName.ToString().ToLower().Trim('/')} Iqual");
+                //                 if (entity.qualifiedName.ToString().ToLower().Trim('/') == qualifiedName.ToLower().Trim('/'))
+                //                 {
+                //                     entityObjectModel.entities.Add(entity);
+                //                     numofretries = 1;
+                //                     return entityObjectModel;
+                //                 }
+                //                 //logger.LogInformation($"Looking for: {qualifiedName.ToLower().Replace("blob", "dfs").Trim('/')} on {entity.qualifiedName.ToString().ToLower().Trim('/')} Iqual");
+                //                 if (entity.qualifiedName.ToString().ToLower().Trim('/') == qualifiedName.ToLower().Replace("blob", "dfs").Trim('/'))
+                //                 {
+                //                     entityObjectModel.entities.Add(entity);
+                //                     numofretries = 1;
+                //                     return entityObjectModel;
+                //                 }
+                //             }
+                //         }
+                //     }
                 }
                 numofretries = 1;
                 return entityObjectModel;
